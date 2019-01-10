@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=no">
+    <meta name="format-detection" content="telephone=yes"/>
+    <link href="css/help.css" rel="stylesheet">
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/jquery.qrcode.min.js"></script>
+    <title></title>
+</head>
+<body>
+
+<div class="head" style="text-align: center ;font-size: 0.35rem;margin-top: 0.1rem">
+    <span style="font-size: 0.3rem">金额：</span><span id="go" style="color: #ff0000;font-size: 0.6rem"></span><span
+        style="font-size: 0.3rem">元</span>
+    <p style="color: #ff0000;font-size: 0.3rem;">重复扫码不到账，请只扫一次</p>
+    <span style="color: #ff0000;font-size: 0.3rem;">支付宝收款人姓</span><span class="name"
+                                                                        style="color: #ff0000;font-size: 0.6rem;"></span><br>
+
+    <!--<button id="pic"  type="button" style="margin-top: 0.25rem;height: 0.41rem;font-size: 0.26rem;width: 80%;text-align: center;margin-bottom: 0.1rem;background-color: #0985B8"><a id="a_href" style="color: white;width: 80%" href="" class="picture">点击这里启动支付宝APP支付</a></button>-->
+    <button id="pic" type="button"
+            style="margin-top: 0.25rem;height: 0.41rem;font-size: 0.26rem;width: 80%;text-align: center;margin-bottom: 0.1rem;background-color: #0985B8"></button>
+    <!--href="alipays://platformapi/startapp?appId=20000067&amp;url=http%3A%2F%2F120.76.58.18%2Fpay%2Findex%2Falipay2%3Fms%3D200%26money%3D1.00%26uid%3D2088812824229817"-->
+</div>
+
+
+<div class="picture" style="text-align: center;font-size: 0;margin-bottom: 0.2rem;margin-top: 0.2rem">
+    <!--<img id="p" style="width: 2.3rem;height:2.3rem" src=''>-->
+</div>
+
+
+<div class="foot" style="text-align: center;font-size: 0.24rem">
+    <p style="font-size: 0.15rem;margin-bottom: 0.3rem">当前二维码有效支付时间：<span id="click"
+                                                                          style="color: #ff0000;font-size: 0.15rem;"></span>
+    </p>
+    <p>如果不能启动支付宝，请按下面步骤</p>
+    <p style="margin-top: 0.2rem">1.请先截屏保存二维码到手机</p>
+    <p style="margin-top: 0.2rem">2.打开支付宝，扫一扫本地图片</p>
+</div>
+<script type="text/javascript">
+    var i = 300;
+    after();
+    //自动刷新页面上的时间
+    function after() {
+
+        if (i / 60 >= 4) {
+            $("#click").empty().append('4分：' + (i - 240) + '秒');
+        } else if (i / 60 >= 3) {
+            $("#click").empty().append("3分：" + (i - 180) + "秒");
+        } else if (i / 60 >= 2) {
+            $("#click").empty().append("2分：" + (i - 120) + "秒");
+        } else if (i / 60 >= 1) {
+            $("#click").empty().append("1分：" + (i - 60) + "秒");
+        } else if (i > 0) {
+            $("#click").empty().append(i + "秒");
+        } else {
+            $("#click").empty().append(0 + "秒");
+        }
+
+        i = i - 1;
+        setTimeout(function () {
+            after();
+            if(i==0) {
+                $('.picture').empty().append('<img id="p" style="width: 2.3rem;height:2.3rem" src='+"picture/400.jpg"+'>');
+                clearTimeout(after);
+                return false;
+            }
+        }, 1000);
+    }
+</script>
+
+<script>
+    $(function () {
+        $.ajax({
+            url: 'http://localhost:8080/pay/reAlipay',
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                $("#go").append('<span>' + data.money + '</span>')
+                $(".name").append('<span>' + '"' + data.names + '"!' + '</span>')
+                //$('#a_href').prop('href',data.sign);
+                $('#pic').append('<a style="color: white;width: 80%" href=' + data.sign + '>点击这里启动支付宝APP支付</a>');
+                function toUtf8(str) {
+                    var out, i, len, c;
+                    out = "";
+                    len = str.length;
+                    for (i = 0; i < len; i++) {
+                        c = str.charCodeAt(i);
+                        if ((c >= 0x0001) && (c <= 0x007F)) {
+                            out += str.charAt(i);
+                        } else if (c > 0x07FF) {
+                            out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F));
+                            out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F));
+                            out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                        } else {
+                            out += String.fromCharCode(0xC0 | ((c >> 6) & 0x1F));
+                            out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F));
+                        }
+                    }
+                    return out;
+                }
+                jQuery('.picture').qrcode({width: 130,height: 130,text:toUtf8(data.signtwo)});
+            }
+        })
+    })
+</script>
+
+
+</body>
+<!--<script>-->
+<!--$("#pay").on("onpageshow",function(){window.location.href="alipays://platformapi/startapp?appId=20000067&amp;url=http%3A%2F%2F120.76.58.18%2Fpay%2Findex%2Falipay2%3Fms%3D132465%26money%3D100%26uid%3D2088332644760869"})-->
+<!--</script>-->
+<script src="js/common.js"></script>
+</html>
+	  
